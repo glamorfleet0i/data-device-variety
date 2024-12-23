@@ -14,14 +14,12 @@ jobs:
       - docker/build: # Build and push with hash
           image: $DOCKER_USERNAME/$IMAGE_NAME
           tag: $CIRCLE_SHA1
-          context: .
       - docker/push:
           image: $DOCKER_USERNAME/$IMAGE_NAME
           tag: $CIRCLE_SHA1
       - docker/build: # Build and push with latest tag
           image: $DOCKER_USERNAME/$IMAGE_NAME
           tag: latest
-          context: .
       - docker/push:
           image: $DOCKER_USERNAME/$IMAGE_NAME
           tag: latest
