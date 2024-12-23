@@ -10,7 +10,7 @@ jobs:
       - docker/check
       - run: # Login to Docker Hub using the access token
           name: Login to Docker Hub
-          command: echo "$DOCKER_ACCESS_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin
+          command: docker login -u "$DOCKER_USERNAME" -p "$DOCKER_ACCESS_TOKEN"
       - docker/build: # Build and push with hash
           image: $DOCKER_USERNAME/$IMAGE_NAME
           tag: $CIRCLE_SHA1
