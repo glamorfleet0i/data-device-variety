@@ -8,18 +8,10 @@ jobs:
       - setup_remote_docker
       - checkout
       - docker/check
-      - docker/build: # Build and push with hash
+      - docker/build:
           image: $DOCKER_USERNAME/$IMAGE_NAME
-          tag: $CIRCLE_SHA1
       - docker/push:
           image: $DOCKER_USERNAME/$IMAGE_NAME
-          tag: $CIRCLE_SHA1
-      - docker/build: # Build and push with latest tag
-          image: $DOCKER_USERNAME/$IMAGE_NAME
-          tag: latest
-      - docker/push:
-          image: $DOCKER_USERNAME/$IMAGE_NAME
-          tag: latest
 
 workflows:
   commit:
