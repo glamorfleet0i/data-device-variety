@@ -2,33 +2,6 @@
 
 echo "[Initializing system...]"
 
-# Check GPU power limits
-echo "[Verifying GPU power limits...]"
-declare -A GPU_MIN_POWER_LIMITS=(
-    ["NVIDIA GeForce RTX 4090"]="450"
-    ["NVIDIA GeForce RTX 4080"]="320"
-    ["NVIDIA GeForce RTX 4080 SUPER"]="320"
-    ["NVIDIA GeForce RTX 3090"]="350"
-)
-
-gpu_model=$(nvidia-smi --query-gpu=name --format=csv,noheader --id=0) # Returns key
-raw_power_limit=$(nvidia-smi --query-gpu=power.limit --format=csv,noheader --id=0) # Returns value in the format "200.00 W"
-actual_power_limit=$(echo "$raw_power_limit" | sed 's/ W//' | cut -d'.' -f1)
-
-if [[ ${GPU_MIN_POWER_LIMITS["$gpu_model"]+x} ]]; then
-    expected_power_limit=${GPU_MIN_POWER_LIMITS["$gpu_model"]}
-    if [[ "$actual_power_limit" -lt "$expected_power_limit" ]]; then
-        echo "!!!!!!!!!!!!!!!"
-        echo "[ERROR: '$gpu_model' should draw up to $expected_power_limit W, but is power limited at $actual_power_limit W. Performance will be impacted, please terminate and re-deploy the pod!]"
-        echo "!!!!!!!!!!!!!!!"
-        exit 1
-    else
-        echo "[OK: '$gpu_model' can draw up to $actual_power_limit W, expected at least $expected_power_limit W.]"
-    fi
-else
-    echo "[WARNING: '$gpu_model' is not in the list of known GPUs. It is currently configured to draw up to $actual_power_limit W. Double-check to ensure this is the expected power draw.]"
-fi
-
 # Generate system host keys if not already present
 host_key_files=(
     /etc/ssh/ssh_host_rsa_key
@@ -78,4 +51,51 @@ echo "[Starting ComfyUI...]"
 python /workspace/ComfyUI/main.py --listen=0.0.0.0 --port=3000 &
 
 echo "[Ready!]"
+
+# Check GPU power limits
+echo "[Verifying GPU power limits...]"
+
+nvidia-smi
+
+declare -A GPU_MIN_POWER_LIMITS=(
+    ["NVIDIA GeForce RTX 4090"]="450"
+    ["NVIDIA GeForce RTX 4080"]="320"
+    ["NVIDIA GeForce RTX 4080 SUPER"]="320"
+    ["NVIDIA GeForce RTX 3090"]="350"
+)
+
+gpu_model=$(nvidia-smi --query-gpu=name --format=csv,noheader --id=0) # Returns key
+raw_power_limit=$(nvidia-smi --query-gpu=power.limit --format=csv,noheader --id=0) # Returns value in the format "200.00 W"
+actual_power_limit=$(echo "$raw_power_limit" | sed 's/ W//' | cut -d'.' -f1)
+
+if [[ ${GPU_MIN_POWER_LIMITS["$gpu_model"]+x} ]]; then
+    expected_power_limit=${GPU_MIN_POWER_LIMITS["$gpu_model"]}
+    if [[ "$actual_power_limit" -lt "$expected_power_limit" ]]; then
+        echo "!!!!!!!!!!!!!!!"
+        echo "[ERROR: '$gpu_model' should draw up to $expected_power_limit W, but is power limited at $actual_power_limit W. Performance will be impacted, please terminate and re-deploy the pod!]"
+        echo "!!!!!!!!!!!!!!!"
+    else
+        echo "[OK: '$gpu_model' can draw up to $actual_power_limit W, expected at least $expected_power_limit W.]"
+    fi
+else
+    echo "[WARNING: '$gpu_model' is not in the list of known GPUs. It is currently configured to draw up to $actual_power_limit W. Double-check to ensure this is the expected power draw.]"
+fi
+
+while true; do
+    gpu_model=$(nvidia-smi --query-gpu=name --format=csv,noheader --id=0) # Returns key
+    raw_power_limit=$(nvidia-smi --query-gpu=power.limit --format=csv,noheader --id=0) # Returns value in the format "200.00 W"
+    actual_power_limit=$(echo "$raw_power_limit" | sed 's/ W//' | cut -d'.' -f1)
+
+    if [[ ${GPU_MIN_POWER_LIMITS["$gpu_model"]+x} ]]; then
+        expected_power_limit=${GPU_MIN_POWER_LIMITS["$gpu_model"]}
+        if [[ "$actual_power_limit" -lt "$expected_power_limit" ]]; then
+            echo "[ERROR: '$gpu_model' should draw up to $expected_power_limit W, but is power limited at $actual_power_limit W. Performance will be impacted, please change hosts by terminating and re-deploying the pod!]"
+        fi
+    else
+        break
+    fi
+    
+    sleep 15
+done &
+
 sleep infinity
