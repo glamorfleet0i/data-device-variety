@@ -6,13 +6,20 @@ jobs:
     executor: docker/docker
     steps:
       - setup_remote_docker
+        docker_layer_caching: true
       - checkout
       - docker/check
       - docker/build:
           image: $DOCKER_LOGIN/$IMAGE_NAME
+          tag: |
+            latest
+            ${CIRCLE_SHA1}
       - docker/push:
           image: $DOCKER_LOGIN/$IMAGE_NAME
-          tag: latest
+          tag: |
+            latest
+            ${CIRCLE_SHA1}
+          digest: true
 
 workflows:
   commit:
