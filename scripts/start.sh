@@ -59,6 +59,9 @@ if ! grep -qF "$PUBLIC_KEY" ~/.ssh/authorized_keys; then
   echo "[Added user SSH public key to authorized_keys.]"
 fi
 
+# Start sshd
+service ssh start
+
 # Start ComfyUI-Filen-Sync in the background
 echo "[Starting ComfyUI Filen Sync...]"
 python /workspace/services/ComfyUI-Filen-Sync/main.py &
@@ -70,6 +73,7 @@ if [ ! -z "$COMFY_LOGIN_PASSWORD_HASH" ]; then
     echo "[PASSWORD hash for ComfyUI-Login found and added.]"
 fi
 
+# Start ComfyUI
 echo "[Starting ComfyUI...]"
 python /workspace/ComfyUI/main.py --listen=0.0.0.0 --port=3000 &
 
