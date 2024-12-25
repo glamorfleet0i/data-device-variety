@@ -20,12 +20,13 @@ logger = logging.getLogger("app.encrypt")
 if not os.path.exists(ENCRYPTED_FILE_DIR):
     os.makedirs(ENCRYPTED_FILE_DIR, exist_ok=True)
 
-def encrypt_and_compress_file(input_file_path):
+def encrypt_and_compress_file(input_file_path: str, prepend_str = ""):
     """
     Compresses and encrypts a file using gzip and GPG.
 
     Args:
         input_file_path: Path to the input file.
+        prepend_str: String to prepend to the encrypted .gz.gpg file.
 
     Returns:
         Path to the encrypted and compressed archive, or None on error.
@@ -35,7 +36,7 @@ def encrypt_and_compress_file(input_file_path):
         
         # Create temporary file paths
         compressed_file_path = os.path.join(temp_dir, input_file_name + ".gz")
-        encrypted_file_path = os.path.join(ENCRYPTED_FILE_DIR, input_file_name + ".gz.gpg")
+        encrypted_file_path = os.path.join(ENCRYPTED_FILE_DIR, prepend_str + input_file_name + ".gz.gpg")
 
         # Compress the input file
         logger.info(f"Compressing file: \"{input_file_path}\"")

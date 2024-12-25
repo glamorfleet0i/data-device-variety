@@ -22,7 +22,7 @@ FILEN_SYNC_UPLOAD_ENDPOINT: Final[str] = f"{FILEN_SYNC_URL}/upload"
 logger = logging.getLogger("app.encrypt")
 
 def upload_to_filen(file_path):
-    logger.info(f"Uploading file: \"{file_path}\"")
+    logger.info(f"Uploading file \"{file_path}\" to Filen...")
     
     headers = { 'authorization': f'Bearer {FILEN_SYNC_API_KEY}' }
     files = { FILEN_SYNC_FILE_FIELD_NAME: open(file_path, 'rb') }
