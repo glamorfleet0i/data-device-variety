@@ -19,7 +19,6 @@ jobs:
           tag: |
             latest
             ${CIRCLE_SHA1}
-          digest: true
 
 workflows:
   commit:
