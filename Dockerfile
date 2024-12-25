@@ -1,8 +1,11 @@
 FROM runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
 ENV HF_HUB_ENABLE_HF_TRANSFER=1
 
-# Update system
-RUN apt-get update && apt-get full-upgrade -y
+# Update system and install openssh
+RUN apt-get update && apt-get full-upgrade -y && apt-get install openssh-server -y
+
+# Set up ssh access
+RUN mkdir -p ~/.ssh
 
 # Install dependencies
 RUN pip install "huggingface_hub[cli]" hf-transfer sageattention
@@ -37,10 +40,17 @@ COPY scripts/install_cogvideo_lora.sh /workspace/setup/install_cogvideo_lora.sh
 RUN chmod +x /workspace/setup/install_cogvideo_lora.sh
 RUN /workspace/setup/install_cogvideo_lora.sh
 
+# Install ComfyUI Filen Sync
+COPY services/ComfyUI-Filen-Sync /workspace/services/ComfyUI-Filen-Sync
+WORKDIR /workspace/services/ComfyUI-Filen-Sync
+RUN pip install -r requirements.txt
+
+# Add startup script
+COPY scripts/start.sh /workspace/start.sh
+
 # Purge pip cache before shipping
 RUN pip cache purge
 
-COPY scripts/start_comfyui.sh /workspace/start_comfyui.sh
 WORKDIR /workspace
 EXPOSE 3000
-CMD ["/bin/bash", "/workspace/start_comfyui.sh"]
+CMD ["/bin/bash", "/workspace/start.sh"]
