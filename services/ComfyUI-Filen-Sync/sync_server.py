@@ -22,7 +22,7 @@ FILEN_SYNC_UPLOAD_ENDPOINT: Final[str] = f"{FILEN_SYNC_URL}/upload"
 logger = logging.getLogger("app.encrypt")
 
 def upload_to_filen(file_path):
-    logger.info(f"Uploading {file_path} to Filen...")
+    logger.info(f"Uploading file: \"{file_path}\"")
     
     headers = { 'authorization': f'Bearer {FILEN_SYNC_API_KEY}' }
     files = { FILEN_SYNC_FILE_FIELD_NAME: open(file_path, 'rb') }
@@ -30,7 +30,7 @@ def upload_to_filen(file_path):
 
     if response.status_code == 201:
         uploaded_file_path = response.json().get('filenPath')
-        logger.info(f"Successfully uploaded file to {uploaded_file_path}.")
+        logger.info(f"Successfully uploaded file to Filen at \"{uploaded_file_path}\".")
         return uploaded_file_path
     else:
         logger.error(f"Failed to upload file.")

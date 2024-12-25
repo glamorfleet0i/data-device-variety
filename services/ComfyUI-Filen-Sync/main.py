@@ -45,7 +45,7 @@ def setup_logging():
         datefmt="%m/%d/%Y, %I:%M:%S %p",
     )
 
-    os.makedirs('logs', exist_ok=True)
+    os.makedirs('comfyui-filen-sync-logs', exist_ok=True)
     file_handler = RotatingFileHandler('comfyui-filen-sync-logs/app.log', maxBytes=10*1024*1024, backupCount=10)  # 10MB limit * 10 logs = 100MB total log limit
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)
