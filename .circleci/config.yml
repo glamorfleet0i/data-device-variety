@@ -12,6 +12,7 @@ jobs:
           image: $DOCKER_LOGIN/$IMAGE_NAME
       - docker/push:
           image: $DOCKER_LOGIN/$IMAGE_NAME
+          tag: latest
 
 workflows:
   commit:
