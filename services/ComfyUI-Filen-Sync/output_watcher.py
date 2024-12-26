@@ -1,5 +1,7 @@
 import os
 import logging
+import threading
+import time
 import zlib
 from typing import Final
 
@@ -10,6 +12,7 @@ from encrypt import encrypt_and_compress_file
 from sync_server import upload_to_filen
 
 DELETE_ENCRYPTED_FILES_AFTER_UPLOAD: Final[bool] = os.environ.get("DELETE_ENCRYPTED_FILES_AFTER_UPLOAD", "true").lower() == "true"
+POST_CREATION_DELAY_SEC: Final[int] = int(os.environ.get("POST_CREATION_DELAY_SEC", "15"))
 
 logger = logging.getLogger("app.output_watcher")
 observer = None
@@ -32,11 +35,8 @@ class OutputFileHandler(FileSystemEventHandler):
         try:
             if (event.src_path in self.files_to_process):
                 self.files_to_process.remove(event.src_path)
-                logger.info(f"File closed, preparing to compress, encrypt, and upload: \"{event.src_path}\"")
-                file_size_mb = round(os.path.getsize(event.src_path) / 1024 / 1024, 2)
-                file_crc32_hash = crc32(event.src_path)
-                logger.info(f"The file \"{event.src_path}\" is {file_size_mb} MB with a CRC-32 hash of \"{file_crc32_hash}\" at the time of compression.")
-                compress_and_upload_file(event.src_path, file_crc32_hash + "-")
+                thread = threading.Thread(target=handle_on_closed, args=(event.src_path,), daemon=False)
+                thread.start()
         except Exception as err:
             logger.error(f"Error in `on_closed()` when processing file \"{event.src_path}\":")
             logger.exception(err)
@@ -63,6 +63,28 @@ def stop_watching_current_directory():
         observer.join()
         observer = None
         logger.info("Stopped watching current directory.")
+
+
+def handle_on_closed(file_path):
+    try:
+        if not os.path.exists(file_path):
+            logger.error(f"The file has disappeared and will not be uploaded: \"{file_path}\"")
+            return
+
+        logger.info(f"File closed, preparing to compress, encrypt, and upload: \"{file_path}\"")
+        
+        if POST_CREATION_DELAY_SEC > 0:
+            logger.info(f"Waiting {POST_CREATION_DELAY_SEC} seconds before processing \"{file_path}\"...")
+            time.sleep(POST_CREATION_DELAY_SEC)
+            logger.info(f"Starting processing for \"{file_path}\"...")
+
+        file_size_mb = round(os.path.getsize(file_path) / 1024 / 1024, 2)
+        file_crc32_hash = crc32(file_path)
+        logger.info(f"The file \"{file_path}\" is {file_size_mb} MB with a CRC-32 hash of \"{file_crc32_hash}\" at the time of compression.")
+        compress_and_upload_file(file_path, file_crc32_hash + "-")
+    except Exception as err:
+        logger.error(f"Error processing \"{file_path}\": {err}")
+        logger.exception(err)
 
 
 def compress_and_upload_file(file_path: str, prepend_str = ""):
