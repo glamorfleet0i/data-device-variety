@@ -11,14 +11,16 @@ jobs:
       - docker/check
       - docker/build:
           image: $DOCKER_LOGIN/$IMAGE_NAME
-          tag: |
-            latest
-            ${CIRCLE_SHA1}
+          tag: latest
+      - docker/build:
+          image: $DOCKER_LOGIN/$IMAGE_NAME
+          tag: ${CIRCLE_SHA1}
       - docker/push:
           image: $DOCKER_LOGIN/$IMAGE_NAME
-          tag: |
-            latest
-            ${CIRCLE_SHA1}
+          tag: latest
+      - docker/push:
+          image: $DOCKER_LOGIN/$IMAGE_NAME
+          tag: ${CIRCLE_SHA1}
 
 workflows:
   commit:
