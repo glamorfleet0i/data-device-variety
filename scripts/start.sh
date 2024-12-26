@@ -74,6 +74,7 @@ if [[ ${GPU_MIN_POWER_LIMITS["$gpu_model"]+x} ]]; then
         echo "!!!!!!!!!!!!!!!"
         echo "[ERROR: '$gpu_model' should draw up to $expected_power_limit W, but is power limited at $actual_power_limit W. Performance will be impacted, please terminate and re-deploy the pod!]"
         echo "!!!!!!!!!!!!!!!"
+        exit 1
     else
         echo "[OK: '$gpu_model' can draw up to $actual_power_limit W, expected at least $expected_power_limit W.]"
     fi
@@ -81,6 +82,7 @@ else
     echo "[WARNING: '$gpu_model' is not in the list of known GPUs. It is currently configured to draw up to $actual_power_limit W. Double-check to ensure this is the expected power draw.]"
 fi
 
+# Routinely check GPU power limit in the background
 while true; do
     gpu_model=$(nvidia-smi --query-gpu=name --format=csv,noheader --id=0) # Returns key
     raw_power_limit=$(nvidia-smi --query-gpu=power.limit --format=csv,noheader --id=0) # Returns value in the format "200.00 W"
@@ -89,7 +91,7 @@ while true; do
     if [[ ${GPU_MIN_POWER_LIMITS["$gpu_model"]+x} ]]; then
         expected_power_limit=${GPU_MIN_POWER_LIMITS["$gpu_model"]}
         if [[ "$actual_power_limit" -lt "$expected_power_limit" ]]; then
-            echo "[ERROR: '$gpu_model' should draw up to $expected_power_limit W, but is power limited at $actual_power_limit W. Performance will be impacted, please change hosts by terminating and re-deploying the pod!]"
+            echo "[WARNING: '$gpu_model' should draw up to $expected_power_limit W, but is currently power limited at $actual_power_limit W!]"
         fi
     else
         break

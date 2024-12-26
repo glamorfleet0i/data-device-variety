@@ -9,7 +9,7 @@ RUN mkdir -p ~/.ssh
 
 # Install dependencies
 RUN pip install "huggingface_hub[cli]" hf-transfer sageattention
-RUN pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu124
+RUN pip install --pre torch torchao torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu124
 
 # Initialize workspace directory
 RUN mkdir -p /workspace
