@@ -4,6 +4,7 @@ REPOS=(
     "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git"
     "https://github.com/kijai/ComfyUI-CogVideoXWrapper.git"
     "https://github.com/liusida/ComfyUI-Login.git"
+    "https://github.com/glamorfleet0i/ComfyUI-Firewall.git"
 )
 
 echo "[Downloading ${#REPOS[@]} custom nodes...]"
