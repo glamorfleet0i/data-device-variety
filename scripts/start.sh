@@ -48,7 +48,8 @@ fi
 
 # Start ComfyUI
 echo "[Starting ComfyUI...]"
-python /workspace/ComfyUI/main.py --listen=0.0.0.0 --port=3000 &
+: ${COMFYUI_PORT:=3000}
+python /workspace/ComfyUI/main.py --listen=0.0.0.0 --port=$COMFYUI_PORT &
 
 echo "[Ready!]"
 
@@ -59,9 +60,12 @@ nvidia-smi
 
 declare -A GPU_MIN_POWER_LIMITS=(
     ["NVIDIA GeForce RTX 4090"]="450"
-    ["NVIDIA GeForce RTX 4080"]="320"
     ["NVIDIA GeForce RTX 4080 SUPER"]="320"
+    ["NVIDIA GeForce RTX 4080"]="320"
+    ["NVIDIA GeForce RTX 3090 Ti"]="450"
     ["NVIDIA GeForce RTX 3090"]="350"
+    ["NVIDIA RTX 4000 Ada Generation"]="130"
+    ["NVIDIA RTX A4000"]="140"
 )
 
 gpu_model=$(nvidia-smi --query-gpu=name --format=csv,noheader --id=0) # Returns key
