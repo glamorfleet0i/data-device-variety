@@ -5,8 +5,7 @@ jobs:
   build-and-push:
     executor: docker/docker
     steps:
-      - setup_remote_docker:
-          docker_layer_caching: true
+      - setup_remote_docker
       - checkout
       - docker/check
       - docker/build:
